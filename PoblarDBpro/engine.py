@@ -6,7 +6,7 @@ from db_sql import Conector
 
 # configuracion del sistema
 total_usuarios = 1000 # recomendable 1000+
-year_ini = 2023 # year para iniciar el sistema
+year_ini = 2024 # year para iniciar el sistema
 month_ini = 1 # mes para iniciar el sistema, 1 es enero
 password = "$2y$10$gl68EE0OBsVO8JX.r9k/Tu2BDUWj3qqirrd9L6f0w5N8rKbErqsKS" # 123456
 prob_tener_link = 0.15 # para que compartan su link a redes sociales
@@ -15,6 +15,8 @@ prob_descripcion = 0.666 # prob de tener una descripcion en el perfil
 prob_superdescripcion = 0.333 # prob que la descripcion sea larga
 prob_troll = 1 / 5 # acciones troll: chat, producto, perfil, pqrs, denuncia
 prob_lacra = 1 / 3 # acciones lacra: chat, producto, perfil
+prob_hitos = [0.1, 0.8] # prob gran pausa vs prob continuacion corta
+prob_conimagen = 0.95 # que un producto posea foto
 tipo_usr_porc = { # probabilidad existir, deben sumar 100%
     "master": 0,
     "admin": 0.01,
@@ -84,6 +86,26 @@ def limpiar_db():
     Conector.run_sql("DELETE FROM `usuarios`")
     Conector.run_sql("DELETE FROM `correos`")
 
+def get_hitos(inicial_dt):
+    global prob_hitos
+    # retorna array con fechas timestamp en las que se haran acciones
+    ini_dt = datetime.fromtimestamp(inicial_dt)
+    fin_dt = datetime.now()
+    fechas = []
+    while True:
+        fechas.append(ini_dt.timestamp())
+        r = random.random()
+        if r < prob_hitos[0]: # gran salto sin actividad
+            paso = timedelta(hours=random.randint(100 * 24, 300 * 24))
+        elif r < prob_hitos[1]: # actividad continua
+            paso = timedelta(hours=random.randint(1, 3 * 24))
+        else: # mediano salto de actividad
+            paso = timedelta(hours=random.randint(10 * 24, 30 * 24))
+        ini_dt += paso
+        if ini_dt >= fin_dt:
+            break
+    return fechas
+
 # crear a los usuarios
 def crear_usuarios():
     global usuarios, total_usuarios, year_ini, month_ini, password, prob_tener_link, prob_notifi, tipo_usr_porc, prob_descripcion, prob_superdescripcion, prob_troll, prob_lacra
@@ -92,7 +114,7 @@ def crear_usuarios():
     fin_dt = datetime.now().timestamp()
     fecha = datetime.fromtimestamp(ini_dt).strftime("%Y-%m-%d %H:%M:%S")
     usuarios.append(Usuario("master@sena", password, "1", False, fecha,
-        True, True, True, 0, "master", prob_troll, prob_lacra))
+        True, True, True, 0, "master", prob_troll, prob_lacra, ini_dt))
     for i in range(total_usuarios):
         r = pow(random.random(), 3)
         dt = ini_dt + r * (fin_dt - ini_dt)
@@ -126,10 +148,31 @@ def crear_usuarios():
             else:
                 tipo = "comprador"
         usuarios.append(Usuario(correo, password, rol, con_link, fecha,
-            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, prob_troll, prob_lacra))
+            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, prob_troll, prob_lacra, dt))
 
 def crear_productos():
-    pass
+    global usuarios, productos, tipo_usr_vende, prob_conimagen, prob_troll, prob_lacra
+
+    subcts = Conector.run_sql("SELECT s.id AS id, s.nombre AS subcategoria, c.nombre AS categoria FROM subcategorias s INNER JOIN categorias c ON c.id = s.categoria_id", None, True)
+    intgr = Conector.run_sql("SELECT id FROM integridad", None, True)
+    for usr in usuarios:
+        hitos = get_hitos(usr.registro_dt)
+        p = tipo_usr_vende[usr.tipo]
+        for hit in hitos:
+            if random.random() < p:
+                con_imagen = "1" if random.random() < prob_conimagen else "0"
+                categos = random.choice(subcts)
+                integridad = random.choice(intgr)[0]
+                if usr.tipo == "lacra":
+                    tipo = "bad"
+                elif usr.tipo == "troll":
+                    tipo = "joda"
+                elif usr.tipo == "vendeall":
+                    tipo = "all" if random.random() < 0.5 else "uno"
+                else:
+                    tipo = "uno"
+                fecha = datetime.fromtimestamp(hit).strftime("%Y-%m-%d %H:%M:%S")
+                productos.append(Producto(con_imagen, categos, integridad, usr.id, tipo, prob_troll, prob_lacra, fecha, hit))
 
 def ver_productos():
     pass

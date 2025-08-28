@@ -4,7 +4,7 @@ from db_sql import Conector
 class Usuario:
     
     def __init__(self, correo, password, rol, con_link, fecha,
-            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, prob_troll, prob_lacra):
+            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, prob_troll, prob_lacra, dt):
         self.correo = correo
         self.password = password
         self.rol_id = rol
@@ -20,6 +20,7 @@ class Usuario:
         self.fecha_registro = fecha
         self.fecha_actualiza = fecha
         self.fecha_reciente = fecha
+        self.registro_dt = dt
         self.id = self.sendSQL()
     
     def sendSQL(self):
