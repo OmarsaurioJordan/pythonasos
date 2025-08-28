@@ -1,6 +1,5 @@
 TAREAS:
 .
-- publicar productos, esto lo hacen los usuarios en función de su tipo, de su fecha de registro hacia adelante.
 - poner al azar bloqueados, favoritos y productos vistos, todo en probabilidad a los tipos de usuarios.
 - hacer chats al azar entre comprador y producto, algunos eliminados, otros activos y otros finalizados en compra o devolución.
 - según las compras de productos algunos pasan a eliminados o invisibles.
@@ -9,7 +8,5 @@ TAREAS:
 - hacer que algunas denuncias y PQRS estén solucionadas por los admins.
 - todas las acciónes de admins crean registros de auditoría.
 - además de usuarios bloqueados por admins, otros han dejado el sistema, invisibles.
-- crear imágenes de productos y chats en carpeta con su nomenclatura.
 - agregar algunos correos con clave y sin usuario.
-- hacer función que permite borrar toda la DB (escxepto tablas de constantes).
 .

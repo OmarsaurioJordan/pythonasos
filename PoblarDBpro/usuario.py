@@ -4,14 +4,14 @@ from db_sql import Conector
 class Usuario:
     
     def __init__(self, correo, password, rol, con_link, fecha,
-            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, prob_troll, prob_lacra, dt):
+            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, go_troll, go_lacra, dt):
         self.correo = correo
         self.password = password
         self.rol_id = rol
         self.nombre = self.newNombre()
         self.avatar = self.newAvatar()
-        self.tipo = tipo
-        self.descripcion = self.newDescripcion(lvl_descripcion, prob_troll, prob_lacra)
+        self.tipo = tipo # master, admin, comprador, curioso, lacra, troll, vendeuno, vendeall
+        self.descripcion = self.newDescripcion(lvl_descripcion, go_troll, go_lacra)
         self.link = self.newLink() if con_link else ""
         self.estado_id = "1"
         self.notifica_correo = noti_correo
@@ -110,9 +110,9 @@ class Usuario:
             "Zambrano", "Zapata", "Zavala", "Zúñiga", "Zárate"
         ]
         genero = nombresH if random.random() < 0.5 else nombresM
-        return random.choice(genero) + " " + random.choice(apellidos)
+        return random.choice(genero) + " " + random.choice(apellidos) + " " + random.choice(apellidos)
     
-    def newDescripcion(self, lvl_descripcion, prob_troll, prob_lacra):
+    def newDescripcion(self, lvl_descripcion, go_troll=False, go_lacra=False):
         limite1 = random.random() * (lvl_descripcion / 2)
         limite2 = random.random() * (lvl_descripcion / 2)
         limite = round(512 * max(limite1, limite2))
@@ -153,7 +153,7 @@ class Usuario:
             ]
         ]
         palabras = [gustos, emociones, tareas]
-        if self.tipo == "lacra" and random.random() < prob_lacra:
+        if self.tipo == "lacra" and go_lacra:
             palabras.append([
                 [
                     "venga por", "le doy", "yo vendo", "quiere", "buscas",
@@ -164,7 +164,7 @@ class Usuario:
                     "cuchillo", "droga", "salchicha", "webcam", "xxx"
                 ]
             ])
-        if self.tipo == "troll" and random.random() < prob_troll:
+        if self.tipo == "troll" and go_troll:
             palabras.append([
                 [
                     "qué ves", "qué le importa", "no joda", "lárguese", "lalala",
@@ -260,5 +260,4 @@ class Usuario:
         return random.choice(links)
     
     def newAvatar(self):
-        # https://avatar.iran.liara.run/public/#
         return str(random.randint(1, 100))

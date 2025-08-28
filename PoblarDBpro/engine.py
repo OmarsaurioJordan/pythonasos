@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from usuario import Usuario
 from producto import Producto
 from db_sql import Conector
+from img_gen import MakeImg
 
 # configuracion del sistema
 total_usuarios = 1000 # recomendable 1000+
@@ -13,10 +14,11 @@ prob_tener_link = 0.15 # para que compartan su link a redes sociales
 prob_notifi = 0.25 # recibir correos, notifi push y usar datos
 prob_descripcion = 0.666 # prob de tener una descripcion en el perfil
 prob_superdescripcion = 0.333 # prob que la descripcion sea larga
-prob_troll = 1 / 5 # acciones troll: chat, producto, perfil, pqrs, denuncia
-prob_lacra = 1 / 3 # acciones lacra: chat, producto, perfil
+prob_troll = 1 / 5 # 1/5 acciones troll: chat, producto, perfil, pqrs, denuncia
+prob_lacra = 1 / 3 # 1/3 acciones lacra: chat, producto, perfil
 prob_hitos = [0.1, 0.8] # prob gran pausa vs prob continuacion corta
 prob_conimagen = 0.95 # que un producto posea foto
+integridades = [0.6, 0.3, 0.8, 0.2] # nuevo, usado, reparado, reciclable, suman 100%
 tipo_usr_porc = { # probabilidad existir, deben sumar 100%
     "master": 0,
     "admin": 0.01,
@@ -147,14 +149,15 @@ def crear_usuarios():
                 tipo = "curioso"
             else:
                 tipo = "comprador"
+        go_troll = random.random() < prob_troll
+        go_lacra = random.random() < prob_lacra
         usuarios.append(Usuario(correo, password, rol, con_link, fecha,
-            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, prob_troll, prob_lacra, dt))
+            noti_correo, noti_push, uso_datos, lvl_descripcion, tipo, go_troll, go_lacra, dt))
 
 def crear_productos():
-    global usuarios, productos, tipo_usr_vende, prob_conimagen, prob_troll, prob_lacra
+    global usuarios, productos, tipo_usr_vende, prob_conimagen, prob_troll, prob_lacra, integridades
 
     subcts = Conector.run_sql("SELECT s.id AS id, s.nombre AS subcategoria, c.nombre AS categoria FROM subcategorias s INNER JOIN categorias c ON c.id = s.categoria_id", None, True)
-    intgr = Conector.run_sql("SELECT id FROM integridad", None, True)
     for usr in usuarios:
         hitos = get_hitos(usr.registro_dt)
         p = tipo_usr_vende[usr.tipo]
@@ -162,7 +165,15 @@ def crear_productos():
             if random.random() < p:
                 con_imagen = "1" if random.random() < prob_conimagen else "0"
                 categos = random.choice(subcts)
-                integridad = random.choice(intgr)[0]
+                r = random.random()
+                if r < integridades[0]:
+                    integridad = 1 # nuevo
+                elif r < integridades[0] + integridades[1]:
+                    integridad = 2 # usado
+                elif r < integridades[0] + integridades[1] + integridades[2]:
+                    integridad = 3 # reparado
+                else:
+                    integridad = 4 # reciclable
                 if usr.tipo == "lacra":
                     tipo = "bad"
                 elif usr.tipo == "troll":
@@ -171,8 +182,12 @@ def crear_productos():
                     tipo = "all" if random.random() < 0.5 else "uno"
                 else:
                     tipo = "uno"
+                go_troll = random.random() < prob_troll
+                go_lacra = random.random() < prob_lacra
                 fecha = datetime.fromtimestamp(hit).strftime("%Y-%m-%d %H:%M:%S")
-                productos.append(Producto(con_imagen, categos, integridad, usr.id, tipo, prob_troll, prob_lacra, fecha, hit))
+                productos.append(Producto(con_imagen, categos, integridad, usr, tipo, go_troll, go_lacra, fecha, hit))
+                if con_imagen == "1":
+                    MakeImg.run_img(0, productos[-1].id, tipo)
 
 def ver_productos():
     pass
