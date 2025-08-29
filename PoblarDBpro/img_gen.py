@@ -25,10 +25,14 @@ class MakeImg:
         # tipo_img: bad, joda, etc
         img = Image.new("RGB", (cls.width, cls.height), color=cls.color_azar())
         draw = ImageDraw.Draw(img)
-        for _ in range(random.randint(cls.figuras / 2, cls.figuras)):
+        for _ in range(random.randint(round(cls.figuras / 2), cls.figuras)):
             shape = random.choice(["lin", "cir", "rec"])
-            x1, y1 = cls.punto_xy_azar()
+            x1r, y1r = cls.punto_xy_azar()
             x2, y2 = cls.punto_xy_azar()
+            x1 = min(x1r, x2)
+            x2 = max(x1r, x2)
+            y1 = min(y1r, y2)
+            y2 = max(y1r, y2)
             color = cls.color_azar()
             r = random.random() < 0.333
             if tipo_img == "bad" and r:

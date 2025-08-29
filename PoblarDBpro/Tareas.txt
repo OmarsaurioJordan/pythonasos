@@ -1,12 +1,12 @@
 TAREAS:
 .
-- poner al azar bloqueados, favoritos y productos vistos, todo en probabilidad a los tipos de usuarios.
+- poner al azar productos vistos, dependiendo de tipos de usuarios.
 - hacer chats al azar entre comprador y producto, algunos eliminados, otros activos y otros finalizados en compra o devolución.
-- según las compras de productos algunos pasan a eliminados o invisibles.
-- hacer denuncias de usuarios hacia otros según tipo.
-- hacer PQRS al azar según tipo de usuario.
-- hacer que algunas denuncias y PQRS estén solucionadas por los admins.
+- poner al azar bloqueados y favoritos, todo en probabilidad a los tipos de usuarios.
+- eliminar productos que sean vendidos.
+- hacer PQRS y respuestas al azar según tipo de usuario.
+- hacer denuncias y respuestas al azar según tipo de usuario.
 - todas las acciónes de admins crean registros de auditoría.
-- además de usuarios bloqueados por admins, otros han dejado el sistema, invisibles.
-- agregar algunos correos con clave y sin usuario.
+- hacer que algunos usuarios abandonen el sistema.
+- agregar algunos correos con clave y sin usuario, pre registro.
 .
